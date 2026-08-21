@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coal_0218 的主页</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 终端窗口 -->
+  <div class="terminal theme-hacker" id="terminal">
+    <div class="titlebar">
+      <div class="traffic">
+        <span class="close"></span>
+        <span class="min"></span>
+        <span class="max"></span>
+      </div>
+      <div class="title" id="titlebar-text">root@coalos — zsh</div>
+    </div>
+    <div class="term-body" id="term-body"></div>
+    <!-- 右下角：主题切换按钮 -->
+    <button id="theme-btn" title="换个主题"></button>
+
+    <!-- rm -rf 彩蛋：系统崩溃画面 -->
+    <div class="crash-screen hide" id="crash">
+      <canvas id="crash-canvas" width="24" height="24"></canvas>
+      <div class="crash-text">SYSTEM HALTED</div>
+      <div class="crash-hint" id="crash-hint">点击任意处重新启动</div>
+    </div>
+  </div>
+
+  <!-- 新手提示弹窗（每次打开都会显示） -->
+  <div class="overlay" id="overlay">
+    <div class="dialog">
+      <h1>欢迎来到我的主页</h1>
+      <p>这个网页是一个伪装成 <b>macOS 终端</b> 的个人主页，有两种玩法：</p>
+      <ul>
+        <li>用鼠标直接<b>点击</b>文件夹 / 文件，即可浏览内容</li>
+        <li>或者像黑客一样输入命令：<code>ls</code> 查看列表、<code>cd</code> 进入文件夹、<code>cat</code> 查看文件</li>
+        <li>点终端右下角的小圆盘，可以切换主题配色</li>
+      </ul>
+      <p class="dim">随时输入 <code>help</code> 可以再看一遍帮助。</p>
+      <button id="start-btn">开始探索</button>
+    </div>
+  </div>
+
+  <script src="terminal.js"></script>
+</body>
+</html>

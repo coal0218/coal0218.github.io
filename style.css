@@ -1,0 +1,302 @@
+/* ==================== 基础 ==================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  /* 背景图片：和 index.html 放在同一文件夹 */
+  background: #000 url("网站背景图片.png") center / cover no-repeat fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "SF Mono", Menlo, Monaco, "Cascadia Code", Consolas, "Courier New", monospace;
+  overflow: hidden;
+}
+
+/* 背景上的暗色遮罩，让终端更突出 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* ==================== 主题配色（CSS 变量） ==================== */
+/* 默认 = macOS Pro 风；theme-hacker 为默认加载主题 */
+.terminal {
+  --t-bg: rgba(15, 17, 26, 0.86);
+  --t-fg: #e6e6e6;
+  --t-dim: #8a8f98;
+  --t-hint: #ffd76e;
+  --t-err: #ff7a7a;
+  --t-user: #7dffa8;
+  --t-host: #6cd6ff;
+  --t-path: #6cb6ff;
+  --t-dir: #6cb6ff;
+  --t-caret: #7dffa8;
+  --t-sel: rgba(125, 255, 168, 0.25);
+}
+.terminal.theme-hacker {   /* 黑客：纯黑 + 亮绿（默认） */
+  --t-bg: rgba(0, 0, 0, 0.93);
+  --t-fg: #c8ffc8;
+  --t-dim: #4a8f5f;
+  --t-hint: #66ff99;
+  --t-err: #ff4d6a;
+  --t-user: #00ff41;
+  --t-host: #00cc33;
+  --t-path: #66ff66;
+  --t-dir: #00ff41;
+  --t-caret: #00ff41;
+  --t-sel: rgba(0, 255, 65, 0.25);
+}
+.terminal.theme-ocean {    /* 蓝色海洋 */
+  --t-bg: rgba(2, 32, 56, 0.9);
+  --t-fg: #d6ecff;
+  --t-dim: #6f95b3;
+  --t-hint: #ffe082;
+  --t-err: #ff8a80;
+  --t-user: #4fc3f7;
+  --t-host: #80d8ff;
+  --t-path: #82cfff;
+  --t-dir: #4fc3f7;
+  --t-caret: #4fc3f7;
+  --t-sel: rgba(79, 195, 247, 0.25);
+}
+.terminal.theme-sakura {   /* 粉色樱花 */
+  --t-bg: rgba(43, 14, 30, 0.9);
+  --t-fg: #ffe0ec;
+  --t-dim: #b97d97;
+  --t-hint: #ffd1e3;
+  --t-err: #ff8a80;
+  --t-user: #ff8fbf;
+  --t-host: #ffb3d4;
+  --t-path: #ff9ec6;
+  --t-dir: #ff8fbf;
+  --t-caret: #ff8fbf;
+  --t-sel: rgba(255, 143, 191, 0.25);
+}
+.terminal.theme-crimson {  /* 红色绯红 */
+  --t-bg: rgba(30, 4, 6, 0.92);
+  --t-fg: #ffd9d9;
+  --t-dim: #a86a6a;
+  --t-hint: #ffd54f;
+  --t-err: #ffab40;
+  --t-user: #ff5252;
+  --t-host: #ff8a80;
+  --t-path: #ff6e6e;
+  --t-dir: #ff5252;
+  --t-caret: #ff5252;
+  --t-sel: rgba(255, 82, 82, 0.25);
+}
+
+/* ==================== 终端窗口 ==================== */
+/* 页面留白 = 窗口大小的 1/5，所以窗口宽 = 100vw / 1.4，高同理 */
+.terminal {
+  position: relative;
+  z-index: 1;
+  width: calc(100vw / 1.4);
+  height: calc(100vh / 1.4);
+  height: calc(100dvh / 1.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--t-bg);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: background 0.3s;
+}
+.terminal ::selection { background: var(--t-sel); }
+
+/* 标题栏 + 红绿灯 */
+.titlebar {
+  flex: none;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  position: relative;
+  background: linear-gradient(#41454c, #2e3138);
+}
+.traffic { display: flex; gap: 8px; }
+.traffic span {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.traffic .close { background: #ff5f57; }
+.traffic .min   { background: #febc2e; }
+.traffic .max   { background: #28c840; }
+.title {
+  position: absolute;
+  left: 60px; right: 60px;
+  text-align: center;
+  color: #d5d8dd;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 终端内容区 */
+.term-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px 14px;
+  color: var(--t-fg);
+  font-size: 14px;
+  line-height: 1.55;
+  cursor: text;
+  transition: color 0.3s;
+}
+.term-body::-webkit-scrollbar { width: 8px; }
+.term-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+
+.line { white-space: pre-wrap; word-break: break-word; }
+
+/* 开机日志固定用白色，不随主题变化 */
+.boot { color: #f0f0f0; }
+
+/* 提示 / 报错配色（随主题变化） */
+.dim  { color: var(--t-dim); }
+.hint { color: var(--t-hint); }
+.err  { color: var(--t-err); }
+
+/* 命令输入行 */
+.input-line { display: flex; align-items: baseline; gap: 8px; }
+.p-user { color: var(--t-user); }
+.p-dim  { color: var(--t-dim); }
+.p-host { color: var(--t-host); }
+.p-path { color: var(--t-path); }
+.term-body input {
+  flex: 1;
+  min-width: 30px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--t-fg);
+  font: inherit;
+  caret-color: var(--t-caret);
+}
+
+/* ls 列表：文件夹和文件都可以点击 */
+.ls-row { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+.clickable { cursor: pointer; border-radius: 4px; padding: 0 3px; }
+.clickable:hover { background: rgba(255, 255, 255, 0.12); text-decoration: underline; }
+.dir  { color: var(--t-dir); font-weight: 700; }
+.file { color: var(--t-fg); }
+
+/* ==================== 右下角主题切换按钮 ==================== */
+#theme-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 6;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: conic-gradient(#00ff41, #586e75, #4fc3f7, #ff8fbf, #ff5252, #00ff41);
+  cursor: pointer;
+  opacity: 0.8;
+  transition: transform 0.15s, opacity 0.15s;
+}
+#theme-btn:hover { opacity: 1; transform: scale(1.12); }
+
+/* ==================== rm -rf 彩蛋：崩溃画面 + 故障抖动 ==================== */
+.crash-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  cursor: pointer;
+}
+.crash-screen.hide { display: none; }
+#crash-canvas {
+  width: 168px;
+  height: 168px;
+  image-rendering: pixelated;   /* 像素风：保持锐利方形边缘 */
+}
+.crash-text {
+  margin-top: 22px;
+  color: #ff2233;
+  font-size: 15px;
+  letter-spacing: 4px;
+}
+.crash-hint {
+  margin-top: 12px;
+  color: #666;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 1s;
+}
+.crash-hint.show { opacity: 1; }
+
+/* 故障（glitch）抖动：transform 抽搐 + clip-path 撕裂 + 反色闪烁 */
+.terminal.glitching { animation: glitch 0.2s steps(2) both; }
+@keyframes glitch {
+  0%   { transform: translate(0); clip-path: none; filter: none; }
+  20%  { transform: translate(-10px, 4px); clip-path: inset(12% 0 58% 0); }
+  40%  { transform: translate(8px, -5px) skewX(3deg); clip-path: inset(62% 0 8% 0); filter: hue-rotate(90deg) saturate(3); }
+  60%  { transform: translate(-5px, 2px); clip-path: inset(38% 0 34% 0); }
+  80%  { transform: translate(6px, -2px) skewX(-2deg); clip-path: none; filter: invert(0.8); }
+  100% { transform: translate(0); clip-path: none; filter: none; }
+}
+
+/* ==================== 新手提示弹窗 ==================== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+.overlay.hide { display: none; }
+.dialog {
+  width: min(430px, 88vw);
+  padding: 26px 28px 22px;
+  background: rgba(32, 34, 43, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: #e8eaef;
+  font-size: 14px;
+  line-height: 1.7;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.dialog h1 { font-size: 18px; margin-bottom: 10px; }
+.dialog ul { margin: 8px 0 8px 18px; }
+.dialog code {
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  font-family: inherit;
+}
+.dialog .dim { margin-top: 8px; font-size: 13px; color: #8a8f98; }
+.dialog button {
+  display: block;
+  margin: 16px auto 0;
+  padding: 7px 28px;
+  border: 0;
+  border-radius: 8px;
+  background: #0a84ff;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dialog button:hover { background: #2f96ff; }
+
+/* ==================== 手机适配：小屏幕上窗口放大 ==================== */
+@media (max-width: 700px) {
+  .terminal { width: 94vw; height: 88vh; height: 88dvh; }
+  .term-body { font-size: 13px; }
+  #crash-canvas { width: 120px; height: 120px; }
+}
