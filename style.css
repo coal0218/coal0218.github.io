@@ -157,6 +157,8 @@ body::before {
 
 /* 开机日志固定用白色，不随主题变化 */
 .boot { color: #f0f0f0; }
+/* 煤炭头像里的 ▓ 亮面：固定灰色，不随主题变化 */
+.coal-shade { color: #6b6f76; }
 
 /* 提示 / 报错配色（随主题变化） */
 .dim  { color: var(--t-dim); }
